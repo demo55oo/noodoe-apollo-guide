@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Noodoe · Apollo buyers in Salesforce</title>
+  <meta name="description" content="Ayra guide: Apollo buyers into Noodoe Salesforce for James Tornabene and Ryan Melanson." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a2443'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' font-family='Georgia,serif' font-size='36' fill='%23ffb706'%3EA%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,680;1,9..144,500&amp;family=Schibsted+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #0a2443;
+      --paper: #f4efe4;
+      --line: rgba(10, 36, 67, 0.12);
+      --sf: #0176d3;
+      --gold: #ffb706;
+      --muted: #5b6a79;
+      --max: 1140px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(900px 420px at 90% -10%, rgba(1, 118, 211, 0.12), transparent 45%),
+        #f4efe4;
+      font-family: "Schibsted Grotesk", "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.16;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      mix-blend-mode: multiply;
+    }
+    a { color: inherit; }
+    .wrap { width: min(var(--max), calc(100% - 40px)); margin: 0 auto; }
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 22px 0 8px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--muted);
+    }
+    .ayra-mark {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: var(--ink);
+      display: grid;
+      place-items: center;
+      padding: 8px;
+      flex-shrink: 0;
+    }
+    .ayra-mark img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .ayra-word {
+      font-family: Fraunces, Georgia, serif;
+      font-weight: 680;
+      font-size: 22px;
+      letter-spacing: -0.03em;
+      color: var(--ink);
+    }
+    .internal {
+      border: 1px solid var(--line);
+      background: #fff8;
+      border-radius: 999px;
+      padding: 6px 11px;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .hero {
+      position: relative;
+      margin: 16px 0 40px;
+      padding: 48px 44px;
+      background: linear-gradient(150deg, #032d60, #0176d3 58%, #00a1e0);
+      color: #f6f0e4;
+      border-radius: 28px;
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, transparent 0, rgba(255,255,255,.05) 1px, transparent 1px),
+        linear-gradient(transparent 0, rgba(255,255,255,.05) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: linear-gradient(#000, transparent 78%);
+      pointer-events: none;
+    }
+    .kicker {
+      position: relative;
+      z-index: 1;
+      color: var(--gold);
+      font-size: 12px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    h1 {
+      position: relative;
+      z-index: 1;
+      margin: 10px 0 12px;
+      font-family: Fraunces, Georgia, serif;
+      font-weight: 680;
+      font-size: clamp(36px, 6vw, 68px);
+      line-height: 0.96;
+      letter-spacing: -0.03em;
+    }
+    .lede {
+      position: relative;
+      z-index: 1;
+      max-width: 640px;
+      color: #f6f0e4cc;
+      font-size: 18px;
+      margin: 0;
+    }
+    section { padding: 10px 0 42px; }
+    .map {
+      display: grid;
+      gap: 14px;
+      margin: 28px 0 8px;
+    }
+    @media (min-width: 820px) {
+      .map { grid-template-columns: 1.2fr 1fr 1fr; }
+    }
+    .card {
+      background: #fffc;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 20px;
+      min-height: 160px;
+    }
+    .card h3 { margin: 0 0 8px; }
+    .card p { margin: 0; }
+    .stat {
+      font-family: Fraunces, Georgia, serif;
+      font-size: 40px;
+      line-height: 1;
+      letter-spacing: -0.03em;
+      margin: 0 0 8px;
+    }
+    .stats {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      margin-top: 18px;
+    }
+    .stats .card { min-height: 0; }
+    .note {
+      margin-top: 22px;
+      max-width: 640px;
+      color: var(--muted);
+    }
+    .sec { color: var(--sf); }
+    footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 18px 0 36px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    footer a { color: var(--sf); }
+    @media (max-width: 880px) {
+      .hero { padding: 32px 20px; }
+      .top, footer { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <a class="brand" href="https://ayra.cx/">
+        <span class="ayra-mark"><img src="data:image/png;base64,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" alt="" /></span>
+        <span class="ayra-word">Ayra</span>
+      </a>
+      <div class="internal">For Noodoe · 30 October 2026</div>
+    </header>
+
+    <section class="hero">
+      <div class="kicker">Apollo · Salesforce</div>
+      <h1>Buyers in. Leads out.</h1>
+      <p class="lede">Apollo finds the person who can sign for chargers. Salesforce gets the Lead, owned by desk.</p>
+    </section>
+
+    <section>
+      <div class="map">
+        <article class="card">
+          <h3>Who we look for</h3>
+          <p>Property, hotel, fleet, dealer, city, and parking buyers in the US and Canada. Verified email only. Electricians and charger brands stay out.</p>
+        </article>
+        <article class="card">
+          <h3>James Tornabene</h3>
+          <p class="stat">East</p>
+          <p>Mississippi River states and everything east of them.</p>
+        </article>
+        <article class="card">
+          <h3>Ryan Melanson</h3>
+          <p class="stat">West</p>
+          <p>West of the river, Texas, the mountain states, and Canada.</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <div class="kicker sec">First run · 30 October 2026</div>
+      <div class="stats">
+        <article class="card"><p class="stat">23</p><p>Leads created in Salesforce</p></article>
+        <article class="card"><p class="stat">14</p><p>Assigned to James</p></article>
+        <article class="card"><p class="stat">9</p><p>Assigned to Ryan</p></article>
+        <article class="card"><p class="stat">25</p><p>Apollo credits used</p></article>
+      </div>
+      <p class="note">Apollo credits do not roll over. We run on the 1st and the 15th so the monthly balance gets used on real buyers before it resets. Rosa and Justin never receive these leads. Apollo sequences stay off.</p>
+    </section>
+
+    <footer>
+      <p>Ayra · Noodoe · Apollo buyers in Salesforce</p>
+      <p><a href="https://ayra.cx/">ayra.cx</a></p>
+    </footer>
+  </div>
+</body>
+</html>
