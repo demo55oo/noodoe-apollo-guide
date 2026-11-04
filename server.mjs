@@ -49,7 +49,7 @@ function serveStatic(req, res) {
   send(res, 200, fs.readFileSync(abs), MIME[ext] || "application/octet-stream");
 }
 
-function startRun(cap = 8000) {
+function startRun(cap = 8360) {
   if (running) {
     return { started: false, reason: "already_running", pid: running.pid };
   }
@@ -99,17 +99,19 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "POST" && url.pathname === "/apollo/run") {
     if (!authorize(req)) return send(res, 401, { ok: false, error: "unauthorized" }, "application/json");
-    let cap = 8000;
+    // Half of Apollo Professional (16,720) so 1st and 15th each take ~half the cycle.
+    const HALF_CYCLE = 8360;
+    let cap = HALF_CYCLE;
     try {
       const chunks = [];
       for await (const chunk of req) chunks.push(chunk);
       const raw = Buffer.concat(chunks).toString("utf8");
       if (raw) {
         const body = JSON.parse(raw);
-        if (body.cap) cap = Math.max(1, Math.min(8000, Number(body.cap) || 8000));
+        if (body.cap) cap = Math.max(1, Math.min(HALF_CYCLE, Number(body.cap) || HALF_CYCLE));
       }
     } catch {
-      // default cap
+      // default half-cycle cap
     }
     const result = startRun(cap);
     return send(res, result.started ? 202 : 409, {
