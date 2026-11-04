@@ -1,4 +1,10 @@
-FROM nginx:alpine
-COPY index.html /usr/share/nginx/html/index.html
-COPY runner.js /usr/share/nginx/html/runner.js
-EXPOSE 80
+FROM node:22-alpine
+WORKDIR /app
+COPY package.json ./
+COPY server.mjs ./
+COPY index.html ./
+COPY runner.js ./
+COPY apollo ./apollo
+ENV NODE_ENV=production
+EXPOSE 8080
+CMD ["node", "server.mjs"]

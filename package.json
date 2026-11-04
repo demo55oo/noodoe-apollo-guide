@@ -1,0 +1,11 @@
+{
+  "name": "noodoe-apollo-guide",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
