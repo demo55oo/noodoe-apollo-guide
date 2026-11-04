@@ -409,6 +409,7 @@ function salesforceBody(row) {
     Company: row.company,
     Email: row.email,
     OwnerId: row.ownerId,
+    LeadSource: "Apollo",
     IAE_Notes__c: notesFor(row),
     Account_Type__c: "New_Business",
   };
@@ -573,7 +574,7 @@ for (const row of keep) {
       skipped += 1;
       continue;
     }
-    const res = await fetch(auth.instanceUrl + "/services/data/v62.0/sobjects/Lead", {
+    let res = await fetch(auth.instanceUrl + "/services/data/v62.0/sobjects/Lead", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + auth.accessToken,
@@ -582,6 +583,22 @@ for (const row of keep) {
       },
       body: JSON.stringify(body),
     });
+    if (!res.ok && body.LeadSource) {
+      const errText = await res.text();
+      if (/LeadSource|INVALID_FIELD/i.test(errText)) {
+        const fallback = { ...body };
+        delete fallback.LeadSource;
+        res = await fetch(auth.instanceUrl + "/services/data/v62.0/sobjects/Lead", {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer " + auth.accessToken,
+            "Content-Type": "application/json",
+            "Sforce-Auto-Assign": "FALSE",
+          },
+          body: JSON.stringify(fallback),
+        });
+      }
+    }
     if (!res.ok) {
       errors += 1;
       continue;

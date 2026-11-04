@@ -409,6 +409,7 @@ export function salesforceBody(row) {
     Company: row.company,
     Email: row.email,
     OwnerId: row.ownerId,
+    LeadSource: "Apollo",
     IAE_Notes__c: notesFor(row),
     Account_Type__c: "New_Business",
   };

@@ -227,7 +227,7 @@ async function alreadyThere(auth, body) {
   return "";
 }
 
-async function createLead(auth, body) {
+async function postLead(auth, body) {
   const res = await fetch(auth.instanceUrl + "/services/data/v62.0/sobjects/Lead", {
     method: "POST",
     headers: {
@@ -238,7 +238,18 @@ async function createLead(auth, body) {
     body: JSON.stringify(body),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(JSON.stringify(data).slice(0, 400));
+  return { ok: res.ok, data };
+}
+
+async function createLead(auth, body) {
+  let { ok, data } = await postLead(auth, body);
+  // If Lead Source is not yet open to the integration user, create without it.
+  if (!ok && body.LeadSource && /LeadSource|INVALID_FIELD/i.test(JSON.stringify(data))) {
+    const fallback = { ...body };
+    delete fallback.LeadSource;
+    ({ ok, data } = await postLead(auth, fallback));
+  }
+  if (!ok) throw new Error(JSON.stringify(data).slice(0, 400));
   return data.id;
 }
 
