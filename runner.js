@@ -428,7 +428,7 @@ function salesforceBody(row) {
 
 
 async function main(env, now) {
-const CAP = 4000;
+const CAP = 8000;
 const key = String((env && env.APOLLO_API_KEY) || "").trim();
 const sfId = String((env && (env.SF_CLIENT_ID || env.NOODOE_SF_CLIENT_ID)) || "").trim();
 const sfSecret = String((env && (env.SF_CLIENT_SECRET || env.NOODOE_SF_CLIENT_SECRET)) || "").trim();
@@ -513,7 +513,7 @@ for (let i = 0; i < toEnrich.length; i += 10) {
     if (!person) continue;
     enriched.push(person);
   }
-  await sleep(120);
+  await sleep(50);
 }
 
 const keep = [];
@@ -568,11 +568,6 @@ for (const row of keep) {
       skipped += 1;
       continue;
     }
-    const accounts = await soql("SELECT Id FROM Account WHERE Name = '" + esc(body.Company) + "' LIMIT 1");
-    if (accounts.length) {
-      skipped += 1;
-      continue;
-    }
     const res = await fetch(auth.instanceUrl + "/services/data/v62.0/sobjects/Lead", {
       method: "POST",
       headers: {
@@ -591,7 +586,7 @@ for (const row of keep) {
   } catch (e) {
     errors += 1;
   }
-  await sleep(40);
+  await sleep(15);
 }
 
 return [{
