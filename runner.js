@@ -430,8 +430,10 @@ function salesforceBody(row) {
 async function main(env, now) {
 const CAP = 8000;
 const key = String((env && env.APOLLO_API_KEY) || "").trim();
-const sfId = String((env && (env.SF_CLIENT_ID || env.NOODOE_SF_CLIENT_ID)) || "").trim();
-const sfSecret = String((env && (env.SF_CLIENT_SECRET || env.NOODOE_SF_CLIENT_SECRET)) || "").trim();
+// Prefer Noodoe-specific creds. Generic SF_CLIENT_* on this host may be a different org.
+const sfId = String((env && (env.NOODOE_SF_CLIENT_ID || env.SF_CLIENT_ID)) || "").trim();
+const sfSecret = String((env && (env.NOODOE_SF_CLIENT_SECRET || env.SF_CLIENT_SECRET)) || "").trim();
+const sfLogin = String((env && (env.NOODOE_SF_LOGIN_URL || env.SF_LOGIN_URL)) || "https://noodoe.my.salesforce.com").trim().replace(/\/$/, "");
 const day = now.day;
 const month = now.month;
 const year = now.year;
@@ -439,7 +441,10 @@ if (day === 11 && !(year === 2026 && month === 11)) {
   return [{ json: { skipped: true, reason: "Day-11 trigger is only for 11 Nov 2026 credit-reset catch-up." } }];
 }
 if (!key) return [{ json: { ok: false, error: "APOLLO_API_KEY missing on n8n env" } }];
-if (!sfId || !sfSecret) return [{ json: { ok: false, error: "SF_CLIENT_ID/SECRET missing on n8n env" } }];
+if (!sfId || !sfSecret) return [{ json: { ok: false, error: "NOODOE_SF_CLIENT_ID/SECRET missing on n8n env" } }];
+if (!/noodoe\.my\.salesforce\.com/i.test(sfLogin)) {
+  return [{ json: { ok: false, error: "NOODOE_SF_LOGIN_URL must be https://noodoe.my.salesforce.com" } }];
+}
 
 const SEGMENTS_Q = [
   { id: "multifamily", body: { person_titles: ["property manager", "regional property manager", "director of facilities", "director of ancillary revenue", "vp of facilities"], include_similar_titles: false, person_seniorities: ["manager", "director", "vp", "c_suite", "owner"], q_organization_keyword_tags: ["property management", "multifamily", "apartment", "real estate"], person_locations: ["United States", "Canada"], contact_email_status: ["verified"], organization_num_employees_ranges: ["11,50", "51,200", "201,500", "501,1000", "1001,5000", "5001,10000", "10001,50000"] } },
@@ -528,7 +533,7 @@ const tokBody = new URLSearchParams({
   client_id: sfId,
   client_secret: sfSecret,
 });
-const tokRes = await fetch("https://noodoe.my.salesforce.com/services/oauth2/token", {
+const tokRes = await fetch(sfLogin + "/services/oauth2/token", {
   method: "POST",
   headers: { "Content-Type": "application/x-www-form-urlencoded" },
   body: tokBody,
